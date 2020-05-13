@@ -52,16 +52,14 @@ _str2denom = dict([('half', 2), ('third', 3), ('fourth', 4), ('fifth', 5),
     ('octillionth', 10 ** 27), ('nonillionth', 10 ** 30), ('quarter', 4)])
 
 # Make reverse dictionaries
-_num2str = dict((y, x) for x, y in _str2num.iteritems() if x != 'a')
-_denom2str = dict((y, x) for x, y in _str2denom.iteritems() if x != 'quarter')
-_small_denom2str = dict((y, x) for x, y in _str2denom.iteritems() if x != 'fourth'
+_num2str = dict((y, x) for x, y in _str2num.items() if x != 'a')
+_denom2str = dict((y, x) for x, y in _str2denom.items() if x != 'quarter')
+_small_denom2str = dict((y, x) for x, y in _str2denom.items() if x != 'fourth'
         and y < 20)
 
 # Add plurals.( _denom2str does not have plurals)
-for denomstr, denom in _str2denom.items():
-    _str2denom[denomstr + 's'] = denom
-_str2denom['halves'] = 2
-del denomstr, denom
+_str2denom.update(dict((k + "s", v) for k, v in _str2denom.items()))
+_str2denom["halves"] = 2
 
 # Add unit words
 _unit_words = {'dozen': 12, 'gross': 144, 'score': 20, 'scores': 20}
@@ -99,7 +97,7 @@ def str2num(numstr):
     numstr = numstr.lower()
     if numstr in _special_nonnum_strs:
         raise ValueError("Could not parse '%s' into a number" % numstr)
-    words = [''.join(word.split(',')) for word in re.split(r'[- ]*', numstr)
+    words = [''.join(word.split(',')) for word in re.split(r'[- ]+', numstr)
             if word != '']
     result = 0
     magnitude = 0
@@ -175,7 +173,7 @@ def _sigfig_round(num, sig_figs):
                 " zero." % str(sig_figs))
 
     if num != 0:
-        return round(num, -int(floor(log10(abs(num))) - (sig_figs - 1)))
+        return float(round(num, -int(floor(log10(abs(num))) - (sig_figs - 1))))
     else:
         return 0.0  # Can't take the log of 0
 
@@ -349,7 +347,7 @@ def num2str(num, style='commas', frac_style='mixed', sig_figs='default'):
         if sig_figs is not None:
             if isinstance(num, float):
                 return str(num) + '0' * (sig_figs - (len(str(num)) - 1))
-            elif isinstance(num, (int, long)):
+            elif isinstance(num, int):
                 res = str(num)
                 if len(res) >= sig_figs:
                     return res
@@ -397,7 +395,7 @@ def num2str(num, style='commas', frac_style='mixed', sig_figs='default'):
             return "negative " + num2str(-num, style, frac_style, sig_figs)
         if isinstance(num, float):
             raise NotImplementedError
-        elif isinstance(num, (int, long)):
+        elif isinstance(num, int):
             if num == 0:
                 return "zero"
             results = []
